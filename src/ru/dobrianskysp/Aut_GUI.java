@@ -85,7 +85,7 @@ public class Aut_GUI extends JFrame implements ActionListener {
     }
     public void logined(String usr, String pass){
         System.out.println(usr);
-        String sqlResult = "SELECT * FROM User WHERE userName = " + usr;
+        String sqlResult = String.format("select * from User where login='%s'", usr);
         System.out.println(sqlResult);
         try {
             Class.forName("org.sqlite.JDBC");
@@ -93,7 +93,7 @@ public class Aut_GUI extends JFrame implements ActionListener {
             state = conn.createStatement();
             ResultSet rs = state.executeQuery(sqlResult);
             while (rs.next()){
-                System.out.println(rs.getString("userName") + ": " + rs.getString("nick"));
+                System.out.println(rs.getString("login") + ": " + rs.getString("nick"));
             }
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
