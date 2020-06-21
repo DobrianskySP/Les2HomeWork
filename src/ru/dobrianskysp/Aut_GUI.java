@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 public class Aut_GUI extends JFrame implements ActionListener {
     private final String title = "Авторизация";
@@ -76,7 +77,11 @@ public class Aut_GUI extends JFrame implements ActionListener {
             System.exit(0);
         } else if (src == btnLogin){
             if (library.logined(login.getText(), pass.getText())){
-                new Cliient_GUI(library.getNick());
+                try {
+                    new Cliient_GUI(library.getNick());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
                 dispose();
             }
         } else if (src == btnReg){
