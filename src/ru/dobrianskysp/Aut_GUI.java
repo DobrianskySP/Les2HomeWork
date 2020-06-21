@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.*;
 
 public class Aut_GUI extends JFrame implements ActionListener {
     private final String title = "Авторизация";
@@ -17,9 +16,6 @@ public class Aut_GUI extends JFrame implements ActionListener {
     private final JButton btnExit = new JButton("Exit");
     private final JPanel top =new JPanel(new GridLayout(2,2));
     private final JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    private Connection conn = null;
-    private Statement state = null;
-    private PreparedStatement ps = null;
 
     private final JFrame registration = new JFrame("Регистрация");
     private final JPanel regPanel = new JPanel(new GridLayout(5,2));
@@ -30,6 +26,8 @@ public class Aut_GUI extends JFrame implements ActionListener {
     private final JButton exit2 = new JButton("Выход");
     private final JTextField nick = new JTextField("nickname");
     private final JPasswordField confirmPass = new JPasswordField("321");
+
+    private final Library library;
 
     public Aut_GUI(){
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -43,80 +41,56 @@ public class Aut_GUI extends JFrame implements ActionListener {
         add(top);
         add(bottom,BorderLayout.SOUTH);
         setResizable(false);
+        library = new Library();
+        library.connection();
+
         btnLogin.addActionListener(this);
         btnReg.addActionListener(this);
         btnExit.addActionListener(this);
-
         setVisible(true);
+    }
+
+    public void Registration(){
+        registration.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        registration.setBounds(300,200,width,heigth);
+        registration.setResizable(false);
+        registration.setTitle("Регистрицая пользователя");
+        regPanel.add(login2);
+        regPanel.add(nick);
+        regPanel.add(pass2);
+        regPanel.add(confirmPass);
+        bottomReg.add(reg2);
+        bottomReg.add(exit2);
+        reg2.addActionListener(this);
+        exit2.addActionListener(this);
+        regPanel.add(bottomReg);
+        registration.add(regPanel);
+        registration.setVisible(true);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();
         if (src == btnExit){
+            library.close();
             System.exit(0);
         } else if (src == btnLogin){
-            logined(login.getText(), pass.getText());
+            if (library.logined(login.getText(), pass.getText())){
+                new Cliient_GUI(library.getNick());
+                dispose();
+            }
         } else if (src == btnReg){
-            registration.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            registration.setBounds(300,200,width,heigth);
-            registration.setResizable(false);
-            registration.setTitle("Регистрицая пользователя");
-            regPanel.add(login2);
-            regPanel.add(nick);
-            regPanel.add(pass2);
-            regPanel.add(confirmPass);
-            bottomReg.add(reg2);
-            bottomReg.add(exit2);
-            reg2.addActionListener(this);
-            exit2.addActionListener(this);
-            regPanel.add(bottomReg);
-            registration.add(regPanel);
-            registration.setVisible(true);
+            Registration();
         } else if (src == exit2){
             registration.dispose();
         } else if (src == reg2) {
             if (pass2.getText().equals(confirmPass.getText())){
-                registrationUser(login2.getText(), nick.getText(), pass2.getText());}
+                library.registrationUser(login2.getText(), nick.getText(), pass2.getText());}
             else {
                 JOptionPane.showMessageDialog(this,"пароли не совпадают");
             }
         }
     }
-    public void logined(String usr, String pass){
-        System.out.println(usr);
-        String sqlResult = String.format("select * from User where login='%s'", usr);
-        System.out.println(sqlResult);
-        try {
-            Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection("jdbc:sqlite:users.db");
-            state = conn.createStatement();
-            ResultSet rs = state.executeQuery(sqlResult);
-            while (rs.next()){
-                System.out.println(rs.getString("login") + ": " + rs.getString("nick"));
-            }
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-    public void registrationUser(String usr, String nick, String pass) {
-        System.out.println(usr);
-        String sqlexecute = "INSERT INTO User ("+usr+", "+nick+", " +pass + ")";
-        System.out.println(sqlexecute);
-        try {
-            Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection("jdbc:sqlite:users.db");
-            state = conn.createStatement();
-            conn.setAutoCommit(false);
-            ps = conn.prepareStatement("INSERT INTO User (userName, nick, password) VALUES (?,?,?)");
-            ps.setString(1, usr);
-            ps.setString(2, nick);
-            ps.setString(3, pass);
-            ps.executeUpdate();
-            conn.commit();
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
 
-    }
+
 }
